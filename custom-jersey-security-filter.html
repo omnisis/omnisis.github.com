@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Custom Security Filters in Jersey</title>
+        <link rel="stylesheet" href="./theme/css/main.css" />
+
+        <!--[if IE]>
+            <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="./">Next Instruction: Technology Musings </a></h1>
+                <nav><ul>
+                    <li class="active"><a href="./category/java-web.html">java, web</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="./custom-jersey-security-filter.html" rel="bookmark"
+           title="Permalink to Custom Security Filters in Jersey">Custom Security Filters in Jersey</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2014-03-23T00:00:00">
+                Sun 23 March 2014
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="./author/omnisis.html">omnisis</a>
+        </address>
+<p>In <a href="./category/java-web.html">java, web</a>. </p>
+
+</footer><!-- /.post-info -->      <h1>Why use custom security filters?</h1>
+<p>Most apps that provide RESTful web services these days use standards like OAuth
+for web application security however many enterprise and legacy systems still
+interface with large directory services or proprietary user repositories.  If
+the security requirements at your company extend beyond BASIC_AUTH and aren't
+based on newer standards like OAuth you may need to write your own security
+filters.  Sure there's <a href="http://projects.spring.io/spring-security/">Spring Security</a>, but you may just need something simple and highly customizable:
+Enter Jersey ContainerRequestFilters.</p>
+<p>In Jersey a  <code>ContainerRequestFilter</code> is very similar to a standard J2EE
+ServletRequestFilter and in fact we can use them in Jersey powered apps to do
+much the same thing as traditional <a href="http://www.oracle.com/technetwork/java/filters-137243.html">Servlet Filters</a>.
+The main difference (as you will see) is that traditional filters are rather
+low-level whilst ContainerRequestFilters are much easier to work with.</p>
+<h1>Our example app</h1>
+<p>For our example app we are going to create a custom <code>UserInfo</code> object that
+holds information about our current logged in user:</p>
+<div class="highlight"><pre><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">nextinstruction</span><span class="o">.</span><span class="na">security</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">java.security.Principal</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserInfo</span> <span class="kd">implements</span> <span class="n">Principal</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">role</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">accessLevel</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="n">String</span> <span class="nf">getName</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">name</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="n">String</span> <span class="nf">getRole</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">role</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">getAccessLevel</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="n">accessLevel</span><span class="o">;</span> <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nf">UserInfo</span><span class="o">(</span><span class="n">String</span> <span class="n">name</span><span class="o">,</span> <span class="n">String</span> <span class="n">role</span><span class="o">,</span> <span class="kt">int</span> <span class="n">accessLevel</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">role</span> <span class="o">=</span> <span class="n">role</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">accessLevel</span> <span class="o">=</span> <span class="n">accessLevel</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>What we want to do is inject this UserInfo object as the Security Principal of
+our <code>SecurityContext</code> (whch is why we implement the
+<a href="http://docs.oracle.com/javase/7/docs/api/java/security/Principal.html">javax.security.Principal</a>
+interface).  In order to do that we need to implement a
+<code>ContainerRequestFilter</code>:</p>
+<div class="highlight"><pre><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">nextinstruction</span><span class="o">.</span><span class="na">security</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.slf4j.Logger</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.slf4j.LoggerFactory</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">javax.annotation.Priority</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.inject.Inject</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.servlet.http.HttpServletRequest</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.servlet.http.HttpSession</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.ws.rs.Priorities</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.ws.rs.container.ContainerRequestContext</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.ws.rs.container.ContainerRequestFilter</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.ws.rs.core.Context</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.ws.rs.core.Response</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.ws.rs.core.SecurityContext</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.ws.rs.ext.Provider</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.io.IOException</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.security.Principal</span><span class="o">;</span>
+
+<span class="nd">@Provider</span>
+<span class="c1">// default priority is &#39;USER&#39; which is too late in the filter processing chain</span>
+<span class="nd">@Priority</span><span class="o">(</span><span class="n">Priorities</span><span class="o">.</span><span class="na">AUTHORIZATION</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">CustomAuthFilter</span> <span class="kd">implements</span> <span class="n">ContainerRequestFilter</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="n">Logger</span> <span class="n">LOG</span> <span class="o">=</span> <span class="n">LoggerFactory</span><span class="o">.</span><span class="na">getLogger</span><span class="o">(</span><span class="n">CustomAuthFilter</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+
+     <span class="kd">public</span> <span class="nf">CustomAuthFilter</span><span class="o">()</span> <span class="o">{</span>
+         <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Initializing Custom Authorization Filter...&quot;</span><span class="o">);</span>
+     <span class="o">}</span>
+
+
+     <span class="nd">@Override</span>
+     <span class="kd">public</span> <span class="kt">void</span> <span class="nf">filter</span><span class="o">(</span><span class="n">ContainerRequestContext</span> <span class="n">containerRequestContext</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+         <span class="c1">// TODO: add code to maybe read some values off the incoming request or consult</span>
+         <span class="c1">// LDAP, etc. to determine auth...</span>
+
+         <span class="kd">final</span> <span class="n">String</span> <span class="n">userName</span> <span class="o">=</span> <span class="s">&quot;testuser&quot;</span><span class="o">;</span>
+         <span class="kd">final</span> <span class="n">String</span> <span class="n">role</span> <span class="o">=</span> <span class="s">&quot;tester&quot;</span><span class="o">;</span>
+         <span class="kd">final</span> <span class="kt">int</span> <span class="n">accessLevel</span> <span class="o">=</span> <span class="mi">5</span><span class="o">;</span>
+
+
+         <span class="c1">// TODO: Use custom auth logic to abort the current connection with an HTTP</span>
+         <span class="c1">// unauthorized error when an unauthorized user shows up.  Here we merely show an</span>
+         <span class="c1">// example by denying any user who hits a particular path</span>
+         <span class="k">if</span><span class="o">(</span><span class="n">requestPath</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="s">&quot;/user/badinfo&quot;</span><span class="o">))</span> <span class="o">{</span>
+             <span class="n">containerRequestContext</span><span class="o">.</span><span class="na">abortWith</span><span class="o">(</span>
+                 <span class="n">Response</span><span class="o">.</span><span class="na">status</span><span class="o">(</span><span class="n">Response</span><span class="o">.</span><span class="na">Status</span><span class="o">.</span><span class="na">UNAUTHORIZED</span><span class="o">)</span>
+                         <span class="o">.</span><span class="na">entity</span><span class="o">(</span><span class="s">&quot;User is not authorized!&quot;</span><span class="o">)</span>
+                         <span class="o">.</span><span class="na">build</span><span class="o">());</span>
+         <span class="o">}</span>
+
+
+         <span class="c1">// here we set a custom security context</span>
+         <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Setting customSecurityContext&quot;</span><span class="o">);</span>
+         <span class="n">containerRequestContext</span><span class="o">.</span><span class="na">setSecurityContext</span><span class="o">(</span><span class="k">new</span> <span class="n">SecurityContext</span><span class="o">()</span> <span class="o">{</span>
+             <span class="nd">@Override</span>
+             <span class="kd">public</span> <span class="n">Principal</span> <span class="nf">getUserPrincipal</span><span class="o">()</span> <span class="o">{</span>
+                 <span class="k">return</span> <span class="k">new</span> <span class="nf">UserInfo</span><span class="o">(</span><span class="n">userName</span><span class="o">,</span> <span class="n">role</span><span class="o">,</span> <span class="n">accessLevel</span><span class="o">);</span>
+             <span class="o">}</span>
+
+             <span class="nd">@Override</span>
+             <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">isUserInRole</span><span class="o">(</span><span class="n">String</span> <span class="n">role</span><span class="o">)</span> <span class="o">{</span>
+                 <span class="k">return</span> <span class="n">role</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">role</span><span class="o">);</span>
+             <span class="o">}</span>
+
+             <span class="nd">@Override</span>
+             <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">isSecure</span><span class="o">()</span> <span class="o">{</span>
+                 <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+             <span class="o">}</span>
+
+             <span class="nd">@Override</span>
+             <span class="kd">public</span> <span class="n">String</span> <span class="nf">getAuthenticationScheme</span><span class="o">()</span> <span class="o">{</span>
+                 <span class="k">return</span> <span class="s">&quot;custom&quot;</span><span class="o">;</span>
+             <span class="o">}</span>
+         <span class="o">});</span>
+
+
+
+
+     <span class="o">}</span>
+ <span class="o">}</span>
+</pre></div>
+
+
+<p>The main takeaways from this code are the following steps:</p>
+<ul>
+<li>Create UserInfo object implementing javax.security.Principal so we can substitute our custom UserInfo object</li>
+<li>Create an impl of <code>ContainerRequestFilter</code> being sure to add annotations
+  for <code>@Provider</code> and <code>@Priority</code></li>
+<li>Inside the <code>filter()</code> method determine if the current user is authorized
+  or not, populate a UserInfo object and set return it in an impl of
+  SecurityContext that you will set on the incoming request</li>
+<li>If user is not authorized, use the <code>containerRequest.abortWith()</code> method
+  to return an appropiate error response</li>
+</ul>
+<h1>SecurityFilter enabled Resource</h1>
+<p>Ok, got all that?  So what does all this work buy us?  To see that we need to
+implement a resource.</p>
+<div class="highlight"><pre><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">nextinstruction</span><span class="o">.</span><span class="na">resources</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">com.nextinstruction.security.UserInfo</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.slf4j.Logger</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.slf4j.LoggerFactory</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">javax.inject.Singleton</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.ws.rs.GET</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.ws.rs.Path</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.ws.rs.Produces</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.ws.rs.core.Context</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.ws.rs.core.MediaType</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.ws.rs.core.SecurityContext</span><span class="o">;</span>
+
+<span class="nd">@Singleton</span>
+<span class="nd">@Path</span><span class="o">(</span><span class="s">&quot;/user&quot;</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserResource</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="n">Logger</span> <span class="n">LOG</span> <span class="o">=</span> <span class="n">LoggerFactory</span><span class="o">.</span><span class="na">getLogger</span><span class="o">(</span><span class="n">UserResource</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+    <span class="kd">public</span> <span class="nf">UserResource</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;UserResource Created!&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="c1">// Here we let Jersey inject a custom security context that was set in the CustomAuthFilter</span>
+    <span class="c1">// The Principal Object in the security context is the one pushed in by the filter</span>
+    <span class="nd">@Context</span>
+    <span class="kd">private</span> <span class="n">SecurityContext</span> <span class="n">securityContext</span><span class="o">;</span>
+
+
+    <span class="nd">@GET</span>
+    <span class="nd">@Path</span><span class="o">(</span><span class="s">&quot;info&quot;</span><span class="o">)</span>
+    <span class="nd">@Produces</span><span class="o">(</span><span class="n">MediaType</span><span class="o">.</span><span class="na">APPLICATION_JSON</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="n">UserInfo</span> <span class="nf">showInfo</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kd">final</span> <span class="n">UserInfo</span> <span class="n">userInfo</span> <span class="o">=</span> <span class="o">(</span><span class="n">UserInfo</span><span class="o">)</span> <span class="n">securityContext</span><span class="o">.</span><span class="na">getUserPrincipal</span><span class="o">();</span>
+        <span class="k">return</span> <span class="n">userInfo</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@GET</span>
+    <span class="nd">@Path</span><span class="o">(</span><span class="s">&quot;badinfo&quot;</span><span class="o">)</span>
+    <span class="nd">@Produces</span><span class="o">(</span><span class="n">MediaType</span><span class="o">.</span><span class="na">APPLICATION_JSON</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="n">UserInfo</span> <span class="nf">badinfo</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kd">final</span> <span class="n">UserInfo</span> <span class="n">userInfo</span> <span class="o">=</span> <span class="o">(</span><span class="n">UserInfo</span><span class="o">)</span> <span class="n">securityContext</span><span class="o">.</span><span class="na">getUserPrincipal</span><span class="o">();</span>
+        <span class="k">return</span> <span class="n">userInfo</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>And there we have it.  If you access the path at <strong>/user/info</strong> you should see
+something like this:</p>
+<div class="highlight"><pre><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;testuser&quot;</span><span class="p">,</span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="s2">&quot;tester&quot;</span><span class="p">,</span><span class="nt">&quot;accessLevel&quot;</span><span class="p">:</span><span class="mi">5</span><span class="p">}</span>
+</pre></div>
+
+
+<p>And if you go to <strong>/user/badinfo</strong> you should get a 401 (HTTP Unauthorized)
+reponse with the text: '''User is not authorized!'''.</p>
+<h2>Injecting the Session</h2>
+<p>If you happen to need the HttpSession for your filter you may notice that its
+no where to be found on the <em>ContainerRequestContext</em> that gets passed to your
+filter implementation.  In that case you will need to add a <em>@Context</em>
+annotated private field in order to have Jersey inject the HttpServletSession as shown below.
+Please note that due to a
+<a href="https://java.net/jira/browse/JERSEY-1960">bug in earlier versions of Jersey 2.0</a>
+you will need to be using Jervery 2.4 or greater for this to work.</p>
+<div class="highlight"><pre><span class="c1">// May used to get attributes that may not be available on the container request context</span>
+<span class="c1">// (e.g. Session Parameters)</span>
+<span class="nd">@Context</span>
+<span class="n">HttpServletRequest</span> <span class="n">webRequest</span><span class="o">;</span>
+</pre></div>
+
+
+<h1>Can we do better?</h1>
+<p>Alright, I admit it, this solution is far from perfect.  For one, everytime we
+want to check the UserInfo object we have to fetch the UserPrincipal, then cast
+it to a UserInfo.  This is certainly not DRY.  Wouldn't it be great if the
+UserInfo object be seamlessly injected into our UserResource without us having
+to do anything?  This would also make it easier to unit test our Resource
+classes as well.  Cool, let's do that.</p>
+<h2>Defining a custom injection annotation</h2>
+<p>What we are aiming for is a resource method signature that looks something
+like:</p>
+<div class="highlight"><pre><span class="nd">@GET</span>
+<span class="nd">@Path</span><span class="o">(</span><span class="s">&quot;info&quot;</span><span class="o">)</span>
+<span class="nd">@Produces</span><span class="o">(</span><span class="n">MediaType</span><span class="o">.</span><span class="na">APPLICATION_JSON</span><span class="o">)</span>
+<span class="kd">public</span> <span class="n">UserInfo</span> <span class="nf">showInfo</span><span class="o">(</span><span class="nd">@AppUser</span> <span class="n">UserInfo</span> <span class="n">userInfo</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">userInfo</span><span class="o">;</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>Then all we need to do is put a <strong>@AppUser</strong> annotation on instances of
+UserInfo parameters in our resource methods and Jersey will automatically
+inject it for us.  Do do that we need to first implement the custom annotation
+as follows:</p>
+<div class="highlight"><pre><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">nextinstruction</span><span class="o">.</span><span class="na">security</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">java.lang.annotation.*</span><span class="o">;</span>
+
+<span class="nd">@Target</span><span class="o">({</span><span class="n">ElementType</span><span class="o">.</span><span class="na">PARAMETER</span><span class="o">})</span>
+<span class="nd">@Retention</span><span class="o">(</span><span class="n">RetentionPolicy</span><span class="o">.</span><span class="na">RUNTIME</span><span class="o">)</span>
+<span class="nd">@Documented</span>
+<span class="kd">public</span> <span class="nd">@interface</span> <span class="n">AppUser</span> <span class="o">{</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>With that out of the way we need to implement the boilerplate to let Jersey 2.0</p>
+<div class="highlight"><pre><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">nextinstruction</span><span class="o">.</span><span class="na">providers</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">com.nextinstruction.security.AppUser</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.nextinstruction.security.UserInfo</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.glassfish.hk2.api.ServiceLocator</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.glassfish.jersey.server.internal.inject.AbstractContainerRequestValueFactory</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.glassfish.jersey.server.internal.inject.AbstractValueFactoryProvider</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.glassfish.jersey.server.internal.inject.MultivaluedParameterExtractorProvider</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.glassfish.jersey.server.internal.inject.ParamInjectionResolver</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.glassfish.jersey.server.model.Parameter</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.slf4j.Logger</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.slf4j.LoggerFactory</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">javax.inject.Inject</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.inject.Singleton</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.security.Principal</span><span class="o">;</span>
+
+
+<span class="nd">@Singleton</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserInfoFactoryProvider</span> <span class="kd">extends</span> <span class="n">AbstractValueFactoryProvider</span> <span class="o">{</span>
+
+    <span class="kd">protected</span> <span class="kd">static</span> <span class="n">Logger</span> <span class="n">LOG</span> <span class="o">=</span> <span class="n">LoggerFactory</span><span class="o">.</span><span class="na">getLogger</span><span class="o">(</span><span class="n">UserInfoFactoryProvider</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+
+    <span class="nd">@Inject</span>
+    <span class="kd">public</span> <span class="nf">UserInfoFactoryProvider</span><span class="o">(</span><span class="n">MultivaluedParameterExtractorProvider</span> <span class="n">mpep</span><span class="o">,</span> <span class="n">ServiceLocator</span> <span class="n">locator</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">(</span><span class="n">mpep</span><span class="o">,</span> <span class="n">locator</span><span class="o">,</span> <span class="n">Parameter</span><span class="o">.</span><span class="na">Source</span><span class="o">.</span><span class="na">UNKNOWN</span><span class="o">);</span>
+    <span class="o">}</span>
+
+
+    <span class="nd">@Singleton</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">InjectionResolver</span> <span class="kd">extends</span> <span class="n">ParamInjectionResolver</span><span class="o">&lt;</span><span class="n">AppUser</span><span class="o">&gt;</span> <span class="o">{</span>
+        <span class="kd">public</span> <span class="nf">InjectionResolver</span><span class="o">()</span> <span class="o">{</span>
+            <span class="kd">super</span><span class="o">(</span><span class="n">UserInfoFactoryProvider</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">UserInfoFactory</span> <span class="kd">extends</span> <span class="n">AbstractContainerRequestValueFactory</span><span class="o">&lt;</span><span class="n">UserInfo</span><span class="o">&gt;</span> <span class="o">{</span>
+
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="n">UserInfo</span> <span class="nf">provide</span><span class="o">()</span> <span class="o">{</span>
+            <span class="kd">final</span> <span class="n">Principal</span> <span class="n">principal</span> <span class="o">=</span> <span class="n">getContainerRequest</span><span class="o">().</span><span class="na">getSecurityContext</span><span class="o">().</span><span class="na">getUserPrincipal</span><span class="o">();</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;Providing user info: {}&quot;</span><span class="o">,</span> <span class="n">principal</span><span class="o">);</span>
+            <span class="k">return</span> <span class="o">(</span><span class="n">UserInfo</span><span class="o">)</span> <span class="n">principal</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="n">AbstractContainerRequestValueFactory</span><span class="o">&lt;?&gt;</span> <span class="n">createValueFactory</span><span class="o">(</span><span class="n">Parameter</span> <span class="n">parameter</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">UserInfoFactory</span><span class="o">();</span>
+    <span class="o">}</span>
+
+
+<span class="o">}</span>
+</pre></div>
+
+
+<p>Most of the work is being handled for us by superclasses so the only really
+work we are doing is inside the <em>provide()</em> method of the UserInfoFactory.  The
+<em>InjectionResolver</em> binds our <em>@AppUser</em> annotation to a UserInfo provider.
+Finally we need to register some bindings with our ResourceContext.</p>
+<div class="highlight"><pre><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">nextinstruction</span><span class="o">.</span><span class="na">binders</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">com.nextinstruction.providers.UserInfoFactoryProvider</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.nextinstruction.security.AppUser</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.glassfish.hk2.api.InjectionResolver</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.glassfish.hk2.api.TypeLiteral</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.glassfish.hk2.utilities.binding.AbstractBinder</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.glassfish.jersey.server.spi.internal.ValueFactoryProvider</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">javax.inject.Singleton</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyBinder</span> <span class="kd">extends</span> <span class="n">AbstractBinder</span> <span class="o">{</span>
+
+        <span class="nd">@Override</span>
+        <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">configure</span><span class="o">()</span> <span class="o">{</span>
+            <span class="n">bind</span><span class="o">(</span><span class="n">UserInfoFactoryProvider</span><span class="o">.</span><span class="na">class</span><span class="o">).</span><span class="na">to</span><span class="o">(</span><span class="n">ValueFactoryProvider</span><span class="o">.</span><span class="na">class</span><span class="o">).</span><span class="na">in</span><span class="o">(</span><span class="n">Singleton</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+            <span class="n">bind</span><span class="o">(</span><span class="n">UserInfoFactoryProvider</span><span class="o">.</span><span class="na">InjectionResolver</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+                    <span class="o">.</span><span class="na">to</span><span class="o">(</span><span class="k">new</span> <span class="n">TypeLiteral</span><span class="o">&lt;</span><span class="n">InjectionResolver</span><span class="o">&lt;</span><span class="n">AppUser</span><span class="o">&gt;&gt;()</span> <span class="o">{</span>
+                    <span class="o">}).</span><span class="na">in</span><span class="o">(</span><span class="n">Singleton</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+        <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="nd">@ApplicationPath</span><span class="o">(</span><span class="s">&quot;resources&quot;</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyApplication</span> <span class="kd">extends</span> <span class="n">ResourceConfig</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="n">Logger</span> <span class="n">LOG</span> <span class="o">=</span> <span class="n">LoggerFactory</span><span class="o">.</span><span class="na">getLogger</span><span class="o">(</span><span class="n">MyApplication</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+
+    <span class="kd">public</span> <span class="nf">MyApplication</span><span class="o">()</span> <span class="o">{</span>
+        <span class="c1">//...</span>
+
+        <span class="n">register</span><span class="o">(</span><span class="k">new</span> <span class="n">MyBinder</span><span class="o">());</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>Now we can use <em>@AppUser</em> annotation on any resource class that needs to access
+it.  Jersey will automatically invoke our filter to set the UserInfo object on
+the SecurityContext and our custom InjectionResolver will map our annotation
+back to the Principal defined in our SecurityContext.</p>
+<div class="highlight"><pre><span class="nd">@GET</span>
+<span class="nd">@Path</span><span class="o">(</span><span class="s">&quot;info&quot;</span><span class="o">)</span>
+<span class="nd">@Produces</span><span class="o">(</span><span class="n">MediaType</span><span class="o">.</span><span class="na">APPLICATION_JSON</span><span class="o">)</span>
+<span class="kd">public</span> <span class="n">UserInfo</span> <span class="nf">showInfo</span><span class="o">(</span><span class="nd">@AppUser</span> <span class="n">UserInfo</span> <span class="n">userInfo</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">userInfo</span><span class="o">;</span>
+<span class="o">}</span>
+</pre></div>
+    </div><!-- /.entry-content -->
+    <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_identifier = "custom-jersey-security-filter.html";
+        var disqus_url = "./custom-jersey-security-filter.html";
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://nextinstruction.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
+    </div>
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>blogroll</h2>
+                        <ul>
+                            <li><a href="http://getpelican.com/">Pelican</a></li>
+                            <li><a href="http://python.org/">Python.org</a></li>
+                            <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                            <li><a href="#">You can modify those links in your config file</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+
+                            <li><a href="#">You can add links in your config file</a></li>
+                            <li><a href="#">Another social link</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'nextinstruction';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>

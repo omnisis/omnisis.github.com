@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Jersey2 + Spring3 + Jackson</title>
+        <link rel="stylesheet" href="./theme/css/main.css" />
+
+        <!--[if IE]>
+            <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="./">Next Instruction: Technology Musings </a></h1>
+                <nav><ul>
+                    <li class="active"><a href="./category/java-web.html">java, web</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="./rest-with-jersey2-spring3-and-jackson.html" rel="bookmark"
+           title="Permalink to Jersey2 + Spring3 + Jackson">Jersey2 + Spring3 + Jackson</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2014-03-22T21:00:00">
+                Sat 22 March 2014
+        </abbr>
+
+        <address class="vcard author">
+                By <a class="url fn" href="./author/omnisis.html">omnisis</a>
+        </address>
+<p>In <a href="./category/java-web.html">java, web</a>. </p>
+
+</footer><!-- /.post-info -->      <h1>The stack</h1>
+<p>In this blog post I will show how to integrate Spring3, Jersey2.0 and Jackson
+(for seamless JSON support).  Here are the technologies used:</p>
+<ul>
+<li>Java 6</li>
+<li>A Servlet 2.5 compatible web container (I used Jetty)</li>
+<li>Spring 3.1.1</li>
+<li>Jersey 2.2</li>
+</ul>
+<p>I keep the Servlet API at 2.5 because some people like myself still have to use
+older app servers (like Tomcat6) in production there are comments below for
+those wanting to switch to Servlet 3.0.</p>
+<h1>Configuring Maven Dependencies</h1>
+<p>First we will define some Maven properties for various frameworks:</p>
+<div class="highlight"><pre><span class="nt">&lt;properties&gt;</span>
+    <span class="nt">&lt;jersey.version&gt;</span>2.2<span class="nt">&lt;/jersey.version&gt;</span>
+    <span class="c">&lt;!-- Change this to a 3.0 version if desired --&gt;</span>
+    <span class="nt">&lt;servlet.api.version&gt;</span>2.5-20081211<span class="nt">&lt;/servlet.api.version&gt;</span>
+    <span class="nt">&lt;project.build.sourceEncoding&gt;</span>UTF-8<span class="nt">&lt;/project.build.sourceEncoding&gt;</span>
+    <span class="nt">&lt;spring.version&gt;</span>3.1.1.RELEASE<span class="nt">&lt;/spring.version&gt;</span>
+    <span class="nt">&lt;jetty.version&gt;</span>8.1.14.v20131031<span class="nt">&lt;/jetty.version&gt;</span>
+<span class="nt">&lt;/properties&gt;</span>
+</pre></div>
+
+
+<h2>Jersey Core</h2>
+<p>These dependencies all relate to Jersey itself.</p>
+<div class="highlight"><pre><span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>org.glassfish.jersey.containers<span class="nt">&lt;/groupId&gt;</span>
+    <span class="c">&lt;!-- Note if you are using Servlet 3.0 you can drop the &quot;-core&quot; suffix --&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>jersey-container-servlet-core<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;version&gt;</span>${jersey.version}<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+<span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>org.mortbay.jetty<span class="nt">&lt;/groupId&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>servlet-api<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;version&gt;</span>${servlet.api.version}<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;scope&gt;</span>provided<span class="nt">&lt;/scope&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+</pre></div>
+
+
+<h2>Spring Support</h2>
+<p>Then some spring-related dependencies:</p>
+<div class="highlight"><pre><span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>org.springframework<span class="nt">&lt;/groupId&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>spring-core<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;version&gt;</span>${spring.version}<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+ <span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>org.springframework<span class="nt">&lt;/groupId&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>spring-context<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;version&gt;</span>${spring.version}<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+<span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>org.springframework<span class="nt">&lt;/groupId&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>spring-beans<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;version&gt;</span>${spring.version}<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+<span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>org.glassfish.jersey.ext<span class="nt">&lt;/groupId&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>jersey-spring3<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;version&gt;</span>${jersey.version}<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+</pre></div>
+
+
+<h2>Jackson JSON Support</h2>
+<div class="highlight"><pre><span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>org.glassfish.jersey.media<span class="nt">&lt;/groupId&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>jersey-media-json-jackson<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;version&gt;</span>${jersey.version}<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+</pre></div>
+
+
+<h2>Jetty support (omit these if you are using Tomcat)</h2>
+<div class="highlight"><pre><span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>org.eclipse.jetty<span class="nt">&lt;/groupId&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>jetty-server<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;version&gt;</span>${jetty.version}<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+<span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>org.eclipse.jetty<span class="nt">&lt;/groupId&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>jetty-webapp<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;version&gt;</span>${jetty.version}<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+</pre></div>
+
+
+<h1>Setting up the web.xml</h1>
+<p>Here's how you will configure your web.xml to support Jersey and Spring3.
+Spring will manage all dependencies in our project and Jersey will handle our
+JAX-RS annotations for our RESTful resources.  This file will need to go in <code>src/main/webapp/WEB-INF/web.xml</code>.</p>
+<div class="highlight"><pre><span class="nt">&lt;web-app</span> <span class="na">version=</span><span class="s">&quot;2.5&quot;</span> <span class="na">xmlns=</span><span class="s">&quot;http://java.sun.com/xml/ns/javaee&quot;</span>
+     <span class="na">xmlns:xsi=</span><span class="s">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>
+     <span class="na">xsi:schemaLocation=</span><span class="s">&quot;http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd&quot;</span><span class="nt">&gt;</span>
+
+<span class="c">&lt;!-- This is so Spring will automatically load our ApplicationContext.xml file --&gt;</span>
+<span class="nt">&lt;listener&gt;</span>
+    <span class="nt">&lt;listener-class&gt;</span>org.springframework.web.context.ContextLoaderListener<span class="nt">&lt;/listener-class&gt;</span>
+<span class="nt">&lt;/listener&gt;</span>
+
+<span class="c">&lt;!-- This is so Spring will be able to inject &quot;request-scoped&quot; beans --&gt;</span>
+<span class="nt">&lt;listener&gt;</span>
+    <span class="nt">&lt;listener-class&gt;</span>org.springframework.web.context.request.RequestContextListener<span class="nt">&lt;/listener-class&gt;</span>
+<span class="nt">&lt;/listener&gt;</span>
+
+<span class="c">&lt;!-- location of our spring application context file --&gt;</span>
+<span class="nt">&lt;context-param&gt;</span>
+    <span class="nt">&lt;param-name&gt;</span>contextConfigLocation<span class="nt">&lt;/param-name&gt;</span>
+    <span class="nt">&lt;param-value&gt;</span>classpath:applicationContext.xml<span class="nt">&lt;/param-value&gt;</span>
+<span class="nt">&lt;/context-param&gt;</span>
+
+<span class="c">&lt;!-- Bootstrap the Jersey Servlet Container and point it to our Main</span>
+<span class="c">Application Class that holds the Jersey Provider and Resource configuration --&gt;</span>
+<span class="nt">&lt;servlet&gt;</span>
+    <span class="nt">&lt;servlet-name&gt;</span>JerseySpringApplication<span class="nt">&lt;/servlet-name&gt;</span>
+    <span class="nt">&lt;servlet-class&gt;</span>org.glassfish.jersey.servlet.ServletContainer<span class="nt">&lt;/servlet-class&gt;</span>
+    <span class="nt">&lt;init-param&gt;</span>
+        <span class="nt">&lt;param-name&gt;</span>javax.ws.rs.Application<span class="nt">&lt;/param-name&gt;</span>
+        <span class="nt">&lt;param-value&gt;</span>com.nextinstruction.MyApplication<span class="nt">&lt;/param-value&gt;</span>
+    <span class="nt">&lt;/init-param&gt;</span>
+    <span class="nt">&lt;load-on-startup&gt;</span>1<span class="nt">&lt;/load-on-startup&gt;</span>
+<span class="nt">&lt;/servlet&gt;</span>
+<span class="nt">&lt;servlet-mapping&gt;</span>
+    <span class="nt">&lt;servlet-name&gt;</span>JerseySpringApplication<span class="nt">&lt;/servlet-name&gt;</span>
+    <span class="nt">&lt;url-pattern&gt;</span>/*<span class="nt">&lt;/url-pattern&gt;</span>
+<span class="nt">&lt;/servlet-mapping&gt;</span>
+<span class="nt">&lt;/web-app&gt;</span>
+</pre></div>
+
+
+<h1>Spring Application Context</h1>
+<p>Now we need to configure our spring application context.  Since Jersey is
+actually managing the lifecycle of our Resource obejcts, Spring is really only managing
+our service layer beans.  Note that you could have Spring eagerly create our
+Resource beans as well though the Jersey managed resources with Spring
+annotations will get properly injected with an spring dependencies declared
+with <code>@Autowired</code> or <code>@Inject</code> annotations.</p>
+<div class="highlight"><pre><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+<span class="nt">&lt;beans</span> <span class="na">xmlns=</span><span class="s">&quot;http://www.springframework.org/schema/beans&quot;</span>
+   <span class="na">xmlns:xsi=</span><span class="s">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span>
+   <span class="na">xmlns:context=</span><span class="s">&quot;http://www.springframework.org/schema/context&quot;</span>
+   <span class="na">xsi:schemaLocation=</span><span class="s">&quot;http://www.springframework.org/schema/beans</span>
+<span class="s">   http://www.springframework.org/schema/beans/spring-beans.xsd</span>
+<span class="s">   http://www.springframework.org/schema/context</span>
+<span class="s">   http://www.springframework.org/schema/context/spring-context.xsd&quot;</span><span class="nt">&gt;</span>
+
+<span class="c">&lt;!-- needed for certain annotations like @PostConstruct --&gt;</span>
+<span class="nt">&lt;context:annotation-config</span> <span class="nt">/&gt;</span>
+
+<span class="c">&lt;!-- Our service layer components --&gt;</span>
+<span class="nt">&lt;context:component-scan</span> <span class="na">base-package=</span><span class="s">&quot;com.nextinstruction.services&quot;</span> <span class="nt">/&gt;</span>
+
+<span class="c">&lt;!-- Our RESTful resources --&gt;</span>
+<span class="c">&lt;!-- No need to declare since Jersey will handle lifecycle for us --&gt;</span>
+<span class="c">&lt;!--&lt;context:component-scan base-package=&quot;com.nextinstruction.resources&quot;/&gt;--&gt;</span>
+<span class="nt">&lt;/beans&gt;</span>
+</pre></div>
+
+
+<h1>Jersey Application Class</h1>
+<p>Jersey has a single entry point typically called the <code>Application</code> class
+that configures providers and resources.  You may configure these one-by-one or
+simply enable classpath scanning by specifying package names where your
+resource and provider classes can be found as below.  The main thing we do
+here is enable the Jackson feature (for JSON marshalling).</p>
+<div class="highlight"><pre><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">nextinstruction</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.glassfish.jersey.jackson.JacksonFeature</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.glassfish.jersey.server.ResourceConfig</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.slf4j.Logger</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.slf4j.LoggerFactory</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.ws.rs.ApplicationPath</span><span class="o">;</span>
+
+<span class="nd">@ApplicationPath</span><span class="o">(</span><span class="s">&quot;resources&quot;</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyApplication</span> <span class="kd">extends</span> <span class="n">ResourceConfig</span> <span class="o">{</span>
+
+<span class="kd">private</span> <span class="n">Logger</span> <span class="n">LOG</span> <span class="o">=</span> <span class="n">LoggerFactory</span><span class="o">.</span><span class="na">getLogger</span><span class="o">(</span><span class="n">MyApplication</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+
+<span class="kd">public</span> <span class="nf">MyApplication</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;MyApplication started!&quot;</span><span class="o">);</span>
+
+    <span class="c1">// Turn on Jersery classpath scanning for providers and resources in the</span>
+    <span class="c1">// given package directories</span>
+    <span class="n">packages</span><span class="o">(</span><span class="s">&quot;com.nextinstruction&quot;</span><span class="o">);</span>
+
+    <span class="c1">// Jackson JSON marshalling</span>
+    <span class="n">register</span><span class="o">(</span><span class="n">JacksonFeature</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+<span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<h1>Application Classes</h1>
+<p>Now (finally!) we are ready to take a look at an example RESTful service
+implemntation that brings all these technologies together.  Our app is a simple
+Quote service that prints a random witty saying and produces text and JSON
+representations.</p>
+<h2>Quote Model Object</h2>
+<div class="highlight"><pre><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">nextinstruction</span><span class="o">.</span><span class="na">model</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Quote</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">message</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">author</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">Quote</span><span class="o">(</span><span class="n">String</span> <span class="n">message</span><span class="o">,</span> <span class="n">String</span> <span class="n">author</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">message</span> <span class="o">=</span> <span class="n">message</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">author</span> <span class="o">=</span> <span class="n">author</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="n">String</span> <span class="nf">getMessage</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">message</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="n">String</span> <span class="nf">getAuthor</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">author</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="n">String</span> <span class="nf">toString</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kd">final</span> <span class="n">StringBuilder</span> <span class="n">sb</span> <span class="o">=</span> <span class="k">new</span> <span class="n">StringBuilder</span><span class="o">();</span>
+        <span class="n">sb</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">message</span><span class="o">).</span><span class="na">append</span><span class="o">(</span><span class="sc">&#39;\n&#39;</span><span class="o">);</span>
+        <span class="n">sb</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="s">&quot;-- &quot;</span><span class="o">).</span><span class="na">append</span><span class="o">(</span><span class="n">author</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">sb</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<h2>QuoteService Impl</h2>
+<p>Here is the QuoteService implementation:</p>
+<div class="highlight"><pre><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">nextinstruction</span><span class="o">.</span><span class="na">services</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">com.nextinstruction.model.Quote</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.stereotype.Service</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">java.util.Random</span><span class="o">;</span>
+
+<span class="c1">// This lets Spring manage this as a singleton dependency for us</span>
+<span class="nd">@Service</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">QuoteService</span> <span class="o">{</span>
+<span class="kd">private</span> <span class="n">Random</span> <span class="n">rand</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Random</span><span class="o">();</span>
+
+<span class="c1">// taken from: http://www.brainyquote.com/quotes/topics/topic_funny.html</span>
+<span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">Quote</span><span class="o">[]</span> <span class="n">QUOTES</span><span class="o">=</span> <span class="o">{</span>
+        <span class="k">new</span> <span class="nf">Quote</span><span class="o">(</span><span class="s">&quot;I believe that if life gives you lemons, you should make lemonade... &quot;</span>    <span class="o">+</span>
+                <span class="s">&quot;And try to find somebody whose life has given them vodka, and have a party.&quot;</span> <span class="o">,</span>
+                <span class="s">&quot;Ron White&quot;</span><span class="o">),</span>
+        <span class="k">new</span> <span class="nf">Quote</span><span class="o">(</span><span class="s">&quot;Do not take life too seriously. You will never get out of it alive.&quot;</span><span class="o">,</span>
+                <span class="s">&quot;Elbert Hubbard&quot;</span><span class="o">),</span>
+        <span class="k">new</span> <span class="nf">Quote</span><span class="o">(</span><span class="s">&quot;Wine is constant proof that God loves us and loves to see us happy.&quot;</span><span class="o">,</span>
+                <span class="s">&quot;Benjamin Franklin&quot;</span><span class="o">),</span>
+        <span class="k">new</span> <span class="nf">Quote</span><span class="o">(</span><span class="s">&quot;A day without sunshine is like, you know, night.&quot;</span><span class="o">,</span>
+                <span class="s">&quot;Steve Martin&quot;</span><span class="o">),</span>
+        <span class="k">new</span> <span class="nf">Quote</span><span class="o">(</span><span class="s">&quot;A woman&#39;s mind is cleaner than a man&#39;s: She changes it more often.&quot;</span><span class="o">,</span>
+                <span class="s">&quot;Oliver Herford&quot;</span><span class="o">),</span>
+        <span class="k">new</span> <span class="nf">Quote</span><span class="o">(</span><span class="s">&quot;If the facts don&#39;t fit the theory, change the facts.&quot;</span><span class="o">,</span>
+                <span class="s">&quot;Albert Einstein&quot;</span><span class="o">),</span>
+        <span class="k">new</span> <span class="nf">Quote</span><span class="o">(</span><span class="s">&quot;I always wanted to be somebody, but now I realize I should have been more specific.&quot;</span><span class="o">,</span>
+                <span class="s">&quot;Lily Tomlin&quot;</span><span class="o">)</span>
+<span class="o">};</span>
+
+<span class="kd">public</span> <span class="n">Quote</span> <span class="nf">getRandomQuote</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">QUOTES</span><span class="o">[</span><span class="n">rand</span><span class="o">.</span><span class="na">nextInt</span><span class="o">(</span><span class="n">QUOTES</span><span class="o">.</span><span class="na">length</span><span class="o">)];</span>
+<span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<h2>QuoteResource</h2>
+<p>And here is the QuoteResource that exposes our QuoteService over REST.</p>
+<div class="highlight"><pre><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">nextinstruction</span><span class="o">.</span><span class="na">resources</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">com.nextinstruction.model.Quote</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.nextinstruction.services.QuoteService</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.slf4j.Logger</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.slf4j.LoggerFactory</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.beans.factory.annotation.Autowired</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">javax.ws.rs.GET</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.ws.rs.Path</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.ws.rs.Produces</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.ws.rs.core.MediaType</span><span class="o">;</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Quotes resource (exposed at &quot;quotes&quot; path)</span>
+<span class="cm"> */</span>
+<span class="nd">@Path</span><span class="o">(</span><span class="s">&quot;quotes&quot;</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">QuoteResource</span> <span class="o">{</span>
+<span class="kd">private</span> <span class="n">Logger</span> <span class="n">LOG</span> <span class="o">=</span> <span class="n">LoggerFactory</span><span class="o">.</span><span class="na">getLogger</span><span class="o">(</span><span class="n">QuoteResource</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+
+<span class="c1">// will get autmatically injected by Spring</span>
+<span class="nd">@Autowired</span> <span class="kd">private</span> <span class="n">QuoteService</span> <span class="n">quoteService</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="nf">QuoteResource</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;QuoteResource Created!&quot;</span><span class="o">);</span>
+<span class="o">}</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Returns a quote as plain text.</span>
+<span class="cm"> */</span>
+<span class="nd">@GET</span>
+<span class="nd">@Path</span><span class="o">(</span><span class="s">&quot;text&quot;</span><span class="o">)</span>
+<span class="nd">@Produces</span><span class="o">(</span><span class="n">MediaType</span><span class="o">.</span><span class="na">TEXT_PLAIN</span><span class="o">)</span>
+<span class="kd">public</span> <span class="n">String</span> <span class="nf">quoteAsString</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">quoteService</span><span class="o">.</span><span class="na">getRandomQuote</span><span class="o">().</span><span class="na">toString</span><span class="o">();</span>
+<span class="o">}</span>
+
+
+<span class="cm">/**</span>
+<span class="cm"> * JSON formatted quotes.</span>
+<span class="cm"> * @return</span>
+<span class="cm"> */</span>
+<span class="nd">@GET</span>
+<span class="nd">@Produces</span><span class="o">(</span><span class="n">MediaType</span><span class="o">.</span><span class="na">APPLICATION_JSON</span><span class="o">)</span>
+<span class="kd">public</span> <span class="n">Quote</span> <span class="nf">getQuoteJSON</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">quoteService</span><span class="o">.</span><span class="na">getRandomQuote</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="o">}</span>
+</pre></div>
+
+
+<h1>Testing with Jetty</h1>
+<p>Now that we've got our RESTful webapp setup it would be nice if we could easily
+bootstrap it for testing -- enter Jetty.  Jetty is great for quickly
+bootstrappig a Java webapp and I highly recommend it.  Here's all the code it
+takes to start a Jetty webserver right from your IDE or cmdline:</p>
+<div class="highlight"><pre><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">nextinstruction</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.eclipse.jetty.server.Server</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.eclipse.jetty.webapp.WebAppContext</span><span class="o">;</span>
+
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">JettyServer</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+        <span class="n">Server</span> <span class="n">server</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Server</span><span class="o">(</span><span class="mi">7878</span><span class="o">);</span>
+
+        <span class="n">WebAppContext</span> <span class="n">context</span> <span class="o">=</span> <span class="k">new</span> <span class="n">WebAppContext</span><span class="o">();</span>
+        <span class="n">context</span><span class="o">.</span><span class="na">setDescriptor</span><span class="o">(</span><span class="n">context</span> <span class="o">+</span> <span class="s">&quot;/WEB-INF/web.xml&quot;</span><span class="o">);</span>
+        <span class="n">context</span><span class="o">.</span><span class="na">setResourceBase</span><span class="o">(</span><span class="s">&quot;../jersey2-spring3-webapp/src/main/webapp&quot;</span><span class="o">);</span>
+        <span class="n">context</span><span class="o">.</span><span class="na">setContextPath</span><span class="o">(</span><span class="s">&quot;/&quot;</span><span class="o">);</span>
+        <span class="n">context</span><span class="o">.</span><span class="na">setParentLoaderPriority</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+
+        <span class="n">server</span><span class="o">.</span><span class="na">setHandler</span><span class="o">(</span><span class="n">context</span><span class="o">);</span>
+
+
+        <span class="n">server</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
+        <span class="n">server</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>The above class will start a Jetty server on port 7878 serving the resources we
+defined earlier and bootstrapping its settings from the web.xml file.  The only
+tricky part is the relative path in the ResourceBase.  If you run this and hit
+<code>http://localhost:7878/quotes</code> you should get output like this:</p>
+<div class="highlight"><pre><span class="p">{</span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="s2">&quot;A woman&#39;s mind is cleaner than a man&#39;s: She changes it more</span>
+<span class="s2">often.&quot;</span><span class="p">,</span><span class="nt">&quot;author&quot;</span><span class="p">:</span><span class="s2">&quot;Oliver Herford&quot;</span><span class="p">}</span>
+</pre></div>
+
+
+<p>Additionally you can get text only output at
+<code>http://localhost:7878/quotes/text</code>:</p>
+<div class="highlight"><pre>If the facts don&#39;t fit the theory, change the facts.
+-- Albert Einstein
+</pre></div>
+    </div><!-- /.entry-content -->
+    <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_identifier = "rest-with-jersey2-spring3-and-jackson.html";
+        var disqus_url = "./rest-with-jersey2-spring3-and-jackson.html";
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://nextinstruction.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
+    </div>
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>blogroll</h2>
+                        <ul>
+                            <li><a href="http://getpelican.com/">Pelican</a></li>
+                            <li><a href="http://python.org/">Python.org</a></li>
+                            <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                            <li><a href="#">You can modify those links in your config file</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+
+                            <li><a href="#">You can add links in your config file</a></li>
+                            <li><a href="#">Another social link</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'nextinstruction';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>
