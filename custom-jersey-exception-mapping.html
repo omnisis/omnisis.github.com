@@ -39,18 +39,7 @@
 </footer><!-- /.post-info -->      <p>Sometimes you want precise control over how web application exceptions get
 mapped to HTTP responses in JAX-RS applications.  This is super easy in Jersey,
 all you have to do is implement a custom <strong>ExceptionMapper</strong> Provider.</p>
-<div class="highlight"><pre><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">nextinstruction</span><span class="o">.</span><span class="na">exception</span><span class="o">;</span>
-
-<span class="kn">import</span> <span class="nn">org.slf4j.Logger</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">org.slf4j.LoggerFactory</span><span class="o">;</span>
-
-<span class="kn">import</span> <span class="nn">javax.ws.rs.core.MediaType</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">javax.ws.rs.core.Response</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">javax.ws.rs.ext.ExceptionMapper</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">javax.ws.rs.ext.Provider</span><span class="o">;</span>
-
-
- <span class="nd">@Provider</span>
+<div class="highlight"><pre> <span class="nd">@Provider</span>
  <span class="kd">public</span> <span class="kd">class</span> <span class="nc">GlobalExceptionMapper</span> <span class="kd">implements</span> <span class="n">ExceptionMapper</span><span class="o">&lt;</span><span class="n">Exception</span><span class="o">&gt;</span> <span class="o">{</span>
      <span class="kd">private</span> <span class="n">Logger</span> <span class="n">LOG</span> <span class="o">=</span> <span class="n">LoggerFactory</span><span class="o">.</span><span class="na">getLogger</span><span class="o">(</span><span class="n">GlobalExceptionMapper</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
 
@@ -71,10 +60,7 @@ all you have to do is implement a custom <strong>ExceptionMapper</strong> Provid
 <p>The above will catch <em>ANY</em> exception thrown from your resources but what if you
 want to format a specific exception differently?  You can do that to with
 another mapper.</p>
-<div class="highlight"><pre><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">nextinstruction</span><span class="o">.</span><span class="na">exception</span><span class="o">;</span>
-
-<span class="kn">import</span> <span class="nn">java.io.Serializable</span><span class="o">;</span>
-
+<div class="highlight"><pre><span class="c1">// Example of a custom exception</span>
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">AppException</span> <span class="kd">extends</span> <span class="n">Exception</span> <span class="kd">implements</span> <span class="n">Serializable</span> <span class="o">{</span>
 
 
@@ -88,12 +74,7 @@ another mapper.</p>
 
 <span class="o">}</span>
 
-<span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">nextinstruction</span><span class="o">.</span><span class="na">exception</span><span class="o">;</span>
-
-<span class="kn">import</span> <span class="nn">javax.ws.rs.core.MediaType</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">javax.ws.rs.core.Response</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">javax.ws.rs.ext.ExceptionMapper</span><span class="o">;</span>
-
+<span class="c1">// Mapper for our custom exception</span>
 <span class="nd">@Provider</span>
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">AppExceptionMapper</span> <span class="kd">implements</span> <span class="n">ExceptionMapper</span><span class="o">&lt;</span><span class="n">AppException</span><span class="o">&gt;</span> <span class="o">{</span>
     <span class="nd">@Override</span>
@@ -107,23 +88,8 @@ another mapper.</p>
 
 
 <p>And here is an example that will excercise our excpetions:</p>
-<div class="highlight"><pre><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">nextinstruction</span><span class="o">.</span><span class="na">resources</span><span class="o">;</span>
-
-<span class="kn">import</span> <span class="nn">com.nextinstruction.exception.AppException</span><span class="o">;</span>
-
-<span class="kn">import</span> <span class="nn">javax.ws.rs.GET</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">javax.ws.rs.Path</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">javax.ws.rs.PathParam</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">javax.ws.rs.Produces</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">javax.ws.rs.core.MediaType</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.text.SimpleDateFormat</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.text.ParseException</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.util.Date</span><span class="o">;</span>
-
-<span class="nd">@Path</span><span class="o">(</span><span class="s">&quot;/epochtime&quot;</span><span class="o">)</span>
+<div class="highlight"><pre><span class="nd">@Path</span><span class="o">(</span><span class="s">&quot;/epochtime&quot;</span><span class="o">)</span>
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">UnixTimestampResource</span> <span class="o">{</span>
-
-
 
     <span class="nd">@Path</span><span class="o">(</span><span class="s">&quot;{year}/{month}/{day}&quot;</span><span class="o">)</span>
     <span class="nd">@GET</span>
