@@ -1,96 +1,64 @@
-<!doctype html>
-<html class="no-js" lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8"> 
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="author" content="omnisis" />
+        <meta name="copyright" content="omnisis" />
 
-		<title>NextInstruction</title>
-		<meta name="description" content="">
-		<meta name="author" content="omnisis">
-
-		<link rel="stylesheet" href="http://www.nextinstruction.com/theme/css/foundation.css" />
-		<link rel="stylesheet" href="http://www.nextinstruction.com/theme/css/pygment/monokai.css" />
-		<link rel="stylesheet" href="http://www.nextinstruction.com/theme/css/custom.css" />
-
-
-		<script src="http://www.nextinstruction.com/theme/js/modernizr.js"></script>
-
-		<!-- Feeds -->
-		<link href="http://www.nextinstruction.com/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="NextInstruction Atom Feed" />
-
-
-		<!-- mathjax config similar to math.stackexchange -->
-		<script type="text/x-mathjax-config">
-		MathJax.Hub.Config({
-			jax: ["input/TeX", "output/HTML-CSS"],
-			tex2jax: {
-				inlineMath: [ ['$', '$'] ],
-				displayMath: [ ['$$', '$$']],
-				processEscapes: true,
-				skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
-			},
-			messageStyle: "none",
-			"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
-		});
-		</script>
-		<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-	</head>
-	<body>
-		<div class="off-canvas-wrap">
-			<div class="inner-wrap">
-				<!-- mobile top bar to activate nav -->
-				<nav class="tab-bar show-for-small">
-					<section class="left-small">
-						<a class="left-off-canvas-toggle menu-icon" ><span></span></a>
-					</section>
-
-					<section class="middle tab-bar-section">
-						<h1 class="title">NextInstruction</h1>
-					</section>
-				</nav>
-
-				<!-- mobile side bar nav -->
-				<aside class="left-off-canvas-menu">
-					<ul class="off-canvas-list">
-						<li><a href="http://www.nextinstruction.com">Home</a></li>
-						<li><label>Categories</label></li>
-							<li class="active"><a href="http://www.nextinstruction.com/category/programming.html">programming</a></li>
-
-						<li><label>Places</label></li>
-							<li><a href="http://getpelican.com/">Pelican</a></li>
-							<li><a href="http://python.org/">Python.org</a></li>
-							<li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
-
-
-
-						<li><label>Links</label></li>
-							<li><a href="http://twitter.com/nullpoint3r">Twitter</a></li>
-					</ul>	
-				</aside>
-
-				<!-- top bar nav -->
-				<nav class="top-bar hide-for-small-only" data-topbar>
-					<ul class="title-area">
-						<li class="name">
-							<h1><a href="http://www.nextinstruction.com/">NextInstruction</a></h1>
-						</li>
-					</ul>
-
-					<section class="top-bar-section">
-						<ul class="left">
-								<li class="active"><a href="http://www.nextinstruction.com/category/programming.html">programming</a></li>
-						</ul>
-					</section>
-				</nav>
-
-				<!-- Main Page Content and Sidebar -->
-				<section class="main-section">
-					<div class="row">
-						<!-- Main Content -->
-						<div class="medium-9 small-12 columns" role="content">
+<meta name="keywords" content=", programming, " />
+        <title>Custom Security Filters in Jersey - NextInstruction
+</title>
+        <link href="http://cdn-images.mailchimp.com/embedcode/slim-081711.css" rel="stylesheet" type="text/css">
+        <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="http://www.nextinstruction.com/theme/css/style.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="http://www.nextinstruction.com/theme/css/solarizedlight.css" media="screen">
+        <link rel="shortcut icon" href="http://www.nextinstruction.com/theme/images/favicon.ico" type="image/x-icon" />
+        <link rel="apple-touch-icon" href="http://www.nextinstruction.com/theme/images/apple-touch-icon.png" />
+        <link rel="apple-touch-icon" sizes="57x57" href="http://www.nextinstruction.com/theme/images/apple-touch-icon-57x57.png" />
+        <link rel="apple-touch-icon" sizes="72x72" href="http://www.nextinstruction.com/theme/images/apple-touch-icon-72x72.png" />
+        <link rel="apple-touch-icon" sizes="114x114" href="http://www.nextinstruction.com/theme/images/apple-touch-icon-114x114.png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="http://www.nextinstruction.com/theme/images/apple-touch-icon-144x144.png" />
+        <link rel="icon" href="http://www.nextinstruction.com/theme/images/apple-touch-icon-144x144.png" />
+    </head>
+    <body>
+        <div id="content-sans-footer">
+        <div class="navbar navbar-static-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+                    <a class="brand" href="http://www.nextinstruction.com/"><span class=site-name>NextInstruction</span></a>
+                    <div class="nav-collapse collapse">
+                        <ul class="nav pull-right top-menu">
+                            <li ><a href="http://www.nextinstruction.com">Home</a></li>
+                            <li ><a href="http://www.nextinstruction.com/categories.html">Categories</a></li>
+                            <li ><a href="http://www.nextinstruction.com/tags.html">Tags</a></li>
+                            <li ><a href="http://www.nextinstruction.com/archives.html">Archives</a></li>
+                            <li><form class="navbar-search" action="http://www.nextinstruction.com/search.html" onsubmit="return validateForm(this.elements['q'].value);"> <input type="text" class="search-query" placeholder="Search" name="q" id="tipue_search_input"></form></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="span1"></div>
+                <div class="span10">
 <article>
-	<h2>Custom Security Filters in Jersey</h2>
-	<h1>Why use custom security filters?</h1>
+<div class="row-fluid">
+    <header class="page_header span10 offset2">
+    <h1><a href="http://www.nextinstruction.com/custom-jersey-security-filter.html"> Custom Security Filters in Jersey  </a></h1>
+    </header>
+</div>
+
+<div class="row-fluid">
+        <div class="span8 offset2 article-content">
+
+            <h1>Why use custom security filters?</h1>
 <p>Most apps that provide RESTful web services these days use standards like OAuth
 for web application security however many enterprise and legacy systems still
 interface with large directory services or proprietary user repositories.  If
@@ -383,74 +351,90 @@ back to the Principal defined in our SecurityContext.</p>
     <span class="k">return</span> <span class="n">userInfo</span><span class="o">;</span>
 <span class="o">}</span>
 </pre></div>
-	<hr/>
-	<h6>Written by <a href="http://www.nextinstruction.com/author/omnisis.html">omnisis</a> in <a href="http://www.nextinstruction.com/category/programming.html">programming</a> on Sun 23 March 2014.</h6>
-</article>
+            <aside>
+            <nav>
+            <ul class="articles_timeline">
+ 
+                <li class="previous_article">« <a href="http://www.nextinstruction.com/rest-with-jersey2-spring3-and-jackson.html" title="Previous: Jersey2 + Spring3 + Jackson">Jersey2 + Spring3 + Jackson</a></li>
+ 
+                <li class="next_article"><a href="http://www.nextinstruction.com/custom-jersey-exception-mapping.html" title="Next: Custom Exception Mapping in Jersey">Custom Exception Mapping in Jersey</a> »</li>
+            </ul>
+            </nav>
+            </aside>
+<section>
+<div class="accordion" id="accordion2">
+    <div class="accordion-group">
+        <div class="accordion-heading">
+            <a class="accordion-toggle disqus-comment-count" data-toggle="collapse" data-parent="#accordion2" 
+                href="http://www.nextinstruction.com/custom-jersey-security-filter.html/#disqus_thread">
+                Comments
+            </a>
+        </div>
+        <div id="disqus_thread" class="accordion-body collapse">
+            <div class="accordion-inner">
+                <div class="comments">
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'omnisisblog';
+        var disqus_identifier = 'http://www.nextinstruction.com/custom-jersey-security-filter.html';
+    var disqus_url = 'http://www.nextinstruction.com/custom-jersey-security-filter.html';
 
-<hr/>
-<div class="row">
-	<div class="small-12 columns">
-		<h3>Comments</h3>
-		<div id="disqus_thread"></div>
-		<script type="text/javascript">
-			var disqus_shortname = 'omnisisblog';
-			(function() {
-				var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-				dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-				(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-			})();
-		</script>
-		<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-		<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-	</div>
+    (function() {
+         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+         dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+         (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+     })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>                </div>
+            </div>
+        </div>
+    </div>
 </div>
-						</div>
-						<!-- End Main Content -->
-						<!-- Sidebar -->
-						<aside class="medium-3 hide-for-small-only columns">
-							<div class="panel">
-								<h5>Places</h5>
-								<ul class="side-nav">
-									<li><a href="http://getpelican.com/">Pelican</a></li>
-									<li><a href="http://python.org/">Python.org</a></li>
-									<li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
-								</ul>
-							</div>
+</section>
+        </div>
+        <section>
+        <div class="span2" style="float:right;font-size:0.9em;">
+ 
+            <h4>Published</h4>
+            <time pubdate="pubdate" datetime="2014-03-23T00:00:00">Mar 23, 2014</time>
+            <h4>Category</h4>
+            <a class="category-link" href="/categories.html#programming-ref">programming</a> 
 
-							<div class="panel">
-								<h5>Tags</h5>
-								<ul class="tag-cloud">
-								</ul>
-							</div>
+        </div>
+        </section>
+    </div>
+    </article>
+                </div>
+                <div class="span1"></div>
+            </div>
+        </div>
+    </div>
+<footer>
+<div id="footer">
+    <ul class="footer-content">
+        <li class="elegant-subtitle"><span class="site-name">NextInstruction</span> - Permanent storage for my aging wetware</li>
+        <li class="elegant-power">Powered by <a href="http://getpelican.com/" title="Pelican Home Page">Pelican</a>. Theme: <a href="http://oncrashreboot.com/pelican-elegant" title="Theme Elegant Home Page">Elegant</a> by <a href="http://oncrashreboot.com" title="Talha Mansoor Home Page">Talha Mansoor</a></li>
+    </ul>
+</div>
+</footer>            <script src="http://code.jquery.com/jquery.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
+        <script>
+            function validateForm(query)
+            {
+                return (query.length > 0);
+            }
+        </script>
 
+<script type="text/javascript">
+    var disqus_shortname = 'omnisisblog';
 
-							<div class="panel">
-								<h5>Links</h5>
-								<ul class="side-nav">
-									<li><a href="http://twitter.com/nullpoint3r">Twitter</a></li>
-								</ul>
-							</div>
-						</aside>
-						<!-- End Sidebar -->
-					</div>
-
-					<!-- Footer -->
-					<footer class="row">
-						<div class="medium-9 small-12">
-							<hr/>
-							<p class="text-center">Powered by <a href="http://getpelican.com">Pelican</a> and <a href="http://foundation.zurb.com/">Zurb Foundation</a>. Theme by <a href="http://hamaluik.com">Kenton Hamaluik</a>.</p>
-						</div>
-					</footer>
-					<!-- End Footer -->
-				</section>
-				<a class="exit-off-canvas"></a>
-			</div><!--off-canvas inner-->
-		</div><!--off-canvas wrap-->
-
-		<script src="http://www.nextinstruction.com/theme/js/jquery.js"></script>
-		<script src="http://www.nextinstruction.com/theme/js/foundation.min.js"></script>
-		<script>
-			$(document).foundation();
-		</script>
-	</body>
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+    </script>
+    </body>
 </html>
