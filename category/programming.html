@@ -1,278 +1,169 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>NextInstruction</title>
-    <meta name="description" content="">
-    <meta name="author" content="omnisis">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!doctype html>
+<html class="no-js" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
-    <!--[if lt IE 9]>
-    <script src="http://www.nextinstruction.com/theme/html5.js"></script>
-    <![endif]-->
+		<title>NextInstruction</title>
+		<meta name="description" content="">
+		<meta name="author" content="omnisis">
 
-    <!-- Le styles -->
-    <link href="http://www.nextinstruction.com/theme/bootstrap.min.css" rel="stylesheet">
-    <link href="http://www.nextinstruction.com/theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="http://www.nextinstruction.com/theme/local.css" rel="stylesheet">
-    <link href="http://www.nextinstruction.com/theme/pygments.css" rel="stylesheet">
-
-</head>
-
-<body>
-
-<div class="navbar">
-    <div class="navbar-inner">
-    <div class="container">
-
-         <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-             <span class="icon-bar"></span>
-             <span class="icon-bar"></span>
-             <span class="icon-bar"></span>
-         </a>
-
-         <a class="brand" href="http://www.nextinstruction.com">NextInstruction</a>
-<h1><small>Permanent storage for my aging wetware</small></h1>        <div class="nav-collapse">
-        <ul class="nav">
-
-        </ul>
-        </div>
-
-    </div>
-    </div>
-</div>
-
-<div class="container">
-    <div class="content">
-    <div class="row">
-
-        <div class="span9">
-        
-
-        
+		<link rel="stylesheet" href="http://www.nextinstruction.com/theme/css/foundation.css" />
+		<link rel="stylesheet" href="http://www.nextinstruction.com/theme/css/pygment/monokai.css" />
+		<link rel="stylesheet" href="http://www.nextinstruction.com/theme/css/custom.css" />
 
 
-    <div class='article'>
-        <div class="content-title">
-            <a href="http://www.nextinstruction.com/custom-jersey-exception-mapping.html"><h1>Custom Exception Mapping in Jersey</h1></a>
-Mon 24 March 2014
+		<script src="http://www.nextinstruction.com/theme/js/modernizr.js"></script>
 
-by <a class="url fn" href="http://www.nextinstruction.com/author/omnisis.html">omnisis</a>
- 
+		<!-- Feeds -->
+		<link href="http://www.nextinstruction.com/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="NextInstruction Atom Feed" />
 
 
- 
-        </div>
-        
-        <div><p>Sometimes you want precise control over how web application exceptions get
-mapped to HTTP responses in JAX-RS applications.  This is super easy in Jersey,
-all you have to do is implement a custom <strong>ExceptionMapper</strong> Provider.</p>
-<div class="highlight"><pre> <span class="nd">@Provider</span>
- <span class="kd">public</span> <span class="kd">class</span> <span class="nc">GlobalExceptionMapper</span> <span class="kd">implements</span> <span class="n">ExceptionMapper</span><span class="o">&lt;</span><span class="n">Exception</span><span class="o">&gt;</span> <span class="o">{</span>
-     <span class="kd">private</span> <span class="n">Logger</span> <span class="n">LOG</span> <span class="o">=</span> <span class="n">LoggerFactory</span><span class="o">.</span><span class="na">getLogger</span><span class="o">(</span><span class="n">GlobalExceptionMapper</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+		<!-- mathjax config similar to math.stackexchange -->
+		<script type="text/x-mathjax-config">
+		MathJax.Hub.Config({
+			jax: ["input/TeX", "output/HTML-CSS"],
+			tex2jax: {
+				inlineMath: [ ['$', '$'] ],
+				displayMath: [ ['$$', '$$']],
+				processEscapes: true,
+				skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+			},
+			messageStyle: "none",
+			"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+		});
+		</script>
+		<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+	</head>
+	<body>
+		<div class="off-canvas-wrap">
+			<div class="inner-wrap">
+				<!-- mobile top bar to activate nav -->
+				<nav class="tab-bar show-for-small">
+					<section class="left-small">
+						<a class="left-off-canvas-toggle menu-icon" ><span></span></a>
+					</section>
 
-     <span class="kd">public</span> <span class="nf">GlobalExceptionMapper</span><span class="o">()</span> <span class="o">{</span>
-         <span class="n">LOG</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&quot;GlobalExceptionMapper wired up&quot;</span><span class="o">);</span>
-     <span class="o">}</span>
+					<section class="middle tab-bar-section">
+						<h1 class="title">NextInstruction</h1>
+					</section>
+				</nav>
 
-     <span class="nd">@Override</span>
-     <span class="kd">public</span> <span class="n">Response</span> <span class="nf">toResponse</span><span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-         <span class="k">return</span> <span class="n">Response</span><span class="o">.</span><span class="na">status</span><span class="o">(</span><span class="n">Response</span><span class="o">.</span><span class="na">Status</span><span class="o">.</span><span class="na">BAD_REQUEST</span><span class="o">)</span>
-                 <span class="o">.</span><span class="na">type</span><span class="o">(</span><span class="n">MediaType</span><span class="o">.</span><span class="na">TEXT_PLAIN_TYPE</span><span class="o">)</span>
-                 <span class="o">.</span><span class="na">entity</span><span class="o">(</span><span class="n">e</span><span class="o">.</span><span class="na">getMessage</span><span class="o">()).</span><span class="na">build</span><span class="o">();</span>
-     <span class="o">}</span>
- <span class="o">}</span>
-</pre></div>
+				<!-- mobile side bar nav -->
+				<aside class="left-off-canvas-menu">
+					<ul class="off-canvas-list">
+						<li><a href="http://www.nextinstruction.com">Home</a></li>
+						<li><label>Categories</label></li>
+							<li class="active"><a href="http://www.nextinstruction.com/category/programming.html">programming</a></li>
 
-
-<p>The above will catch <em>ANY</em> exception thrown from your resources but what if you
-want to format a specific exception differently?  You can do that to with
-another mapper.</p>
-<div class="highlight"><pre><span class="c1">// Example of a custom exception</span>
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">AppException</span> <span class="kd">extends</span> <span class="n">Exception</span> <span class="kd">implements</span> <span class="n">Serializable</span> <span class="o">{</span>
-
-
-    <span class="kd">public</span> <span class="nf">AppException</span><span class="o">(</span><span class="n">String</span> <span class="n">s</span><span class="o">)</span> <span class="o">{</span>
-        <span class="kd">super</span><span class="o">(</span><span class="n">s</span><span class="o">);</span>
-    <span class="o">}</span>
-
-    <span class="kd">public</span> <span class="nf">AppException</span><span class="o">(</span><span class="n">String</span> <span class="n">s</span><span class="o">,</span> <span class="n">Throwable</span> <span class="n">throwable</span><span class="o">)</span> <span class="o">{</span>
-        <span class="kd">super</span><span class="o">(</span><span class="n">s</span><span class="o">,</span> <span class="n">throwable</span><span class="o">);</span>
-    <span class="o">}</span>
-
-<span class="o">}</span>
-
-<span class="c1">// Mapper for our custom exception</span>
-<span class="nd">@Provider</span>
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">AppExceptionMapper</span> <span class="kd">implements</span> <span class="n">ExceptionMapper</span><span class="o">&lt;</span><span class="n">AppException</span><span class="o">&gt;</span> <span class="o">{</span>
-    <span class="nd">@Override</span>
-    <span class="kd">public</span> <span class="n">Response</span> <span class="nf">toResponse</span><span class="o">(</span><span class="n">AppException</span> <span class="n">exception</span><span class="o">)</span> <span class="o">{</span>
-         <span class="k">return</span> <span class="n">Response</span><span class="o">.</span><span class="na">status</span><span class="o">(</span><span class="n">Response</span><span class="o">.</span><span class="na">Status</span><span class="o">.</span><span class="na">BAD_REQUEST</span><span class="o">)</span>
-                <span class="o">.</span><span class="na">type</span><span class="o">(</span><span class="n">MediaType</span><span class="o">.</span><span class="na">TEXT_PLAIN_TYPE</span><span class="o">)</span>
-                <span class="o">.</span><span class="na">entity</span><span class="o">(</span><span class="n">exception</span><span class="o">.</span><span class="na">getMessage</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot;\nWhat were you thinking?&quot;</span><span class="o">).</span><span class="na">build</span><span class="o">();</span>
-    <span class="o">}</span>
-<span class="o">}</span>
-</pre></div>
+						<li><label>Places</label></li>
+							<li><a href="http://getpelican.com/">Pelican</a></li>
+							<li><a href="http://python.org/">Python.org</a></li>
+							<li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
 
 
-<p>And here is an example that will excercise our excpetions:</p>
-<div class="highlight"><pre><span class="nd">@Path</span><span class="o">(</span><span class="s">&quot;/epochtime&quot;</span><span class="o">)</span>
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UnixTimestampResource</span> <span class="o">{</span>
 
-    <span class="nd">@Path</span><span class="o">(</span><span class="s">&quot;{year}/{month}/{day}&quot;</span><span class="o">)</span>
-    <span class="nd">@GET</span>
-    <span class="nd">@Produces</span><span class="o">(</span><span class="n">MediaType</span><span class="o">.</span><span class="na">APPLICATION_JSON</span><span class="o">)</span>
-    <span class="kd">public</span> <span class="kt">long</span> <span class="nf">toEpochTime</span><span class="o">(</span><span class="nd">@PathParam</span><span class="o">(</span><span class="s">&quot;year&quot;</span><span class="o">)</span> <span class="n">String</span> <span class="n">year</span><span class="o">,</span>
-                            <span class="nd">@PathParam</span><span class="o">(</span><span class="s">&quot;month&quot;</span><span class="o">)</span> <span class="n">String</span> <span class="n">month</span><span class="o">,</span>
-                            <span class="nd">@PathParam</span><span class="o">(</span><span class="s">&quot;day&quot;</span><span class="o">)</span> <span class="n">String</span> <span class="n">day</span><span class="o">)</span> <span class="o">{</span>
+						<li><label>Links</label></li>
+							<li><a href="http://twitter.com/nullpoint3r">Twitter</a></li>
+					</ul>	
+				</aside>
 
-        <span class="kd">final</span> <span class="n">String</span> <span class="n">dateString</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="s">&quot;%s%s%s&quot;</span><span class="o">,</span><span class="n">year</span><span class="o">,</span><span class="n">month</span><span class="o">,</span><span class="n">day</span><span class="o">);</span>
+				<!-- top bar nav -->
+				<nav class="top-bar hide-for-small-only" data-topbar>
+					<ul class="title-area">
+						<li class="name">
+							<h1><a href="http://www.nextinstruction.com/">NextInstruction</a></h1>
+						</li>
+					</ul>
 
-        <span class="k">try</span> <span class="o">{</span>
-            <span class="kd">final</span> <span class="n">Date</span> <span class="n">date</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SimpleDateFormat</span><span class="o">(</span><span class="s">&quot;yyyyMMdd&quot;</span><span class="o">).</span><span class="na">parse</span><span class="o">(</span><span class="n">dateString</span><span class="o">);</span>
-            <span class="k">return</span> <span class="n">date</span><span class="o">.</span><span class="na">getTime</span><span class="o">()/</span><span class="mi">1000</span><span class="o">;</span>
-        <span class="o">}</span> <span class="k">catch</span><span class="o">(</span><span class="n">ParseException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-            <span class="k">throw</span> <span class="k">new</span> <span class="nf">AppException</span><span class="o">(</span><span class="s">&quot;Invalid Date Params: y=&quot;</span><span class="o">+</span><span class="n">year</span><span class="o">+</span><span class="s">&quot;,m=&quot;</span><span class="o">+</span><span class="n">month</span><span class="o">+</span><span class="s">&quot;,d=&quot;</span><span class="o">+</span><span class="n">day</span><span class="o">,</span><span class="n">e</span><span class="o">);</span>
-        <span class="o">}</span>
+					<section class="top-bar-section">
+						<ul class="left">
+								<li class="active"><a href="http://www.nextinstruction.com/category/programming.html">programming</a></li>
+						</ul>
+					</section>
+				</nav>
 
-    <span class="o">}</span>
-<span class="o">}</span>
-</pre></div>
+				<!-- Main Page Content and Sidebar -->
+				<section class="main-section">
+					<div class="row">
+						<!-- Main Content -->
+						<div class="medium-9 small-12 columns" role="content">
+							<div class="row">
+								<div class="small-12 columns">
+									<h2>Category: programming</h2>
+								</div>
+							</div>
 
-
-<p>And here's what we get back:</p>
-<div class="highlight"><pre>curl -v http://localhost:7878/epochtime/2001/01/abc
-* About to connect() to localhost port 7878 (#0)
-*   Trying ::1...
-* connected
-* Connected to localhost (::1) port 7878 (#0)
-&gt; GET /epochtime/2001/01/abc HTTP/1.1
-&gt; User-Agent: curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5
-&gt; Host: localhost:7878
-&gt; Accept: */*
-&gt;
-&lt; HTTP/1.1 400 Bad Request
-&lt; Set-Cookie: JSESSIONID=uiwc5zr2wcvv1vuojfnlut3y2;Path=/
-&lt; Expires: Thu, 01 Jan 1970 00:00:00 GMT
-&lt; Content-Length: 62
-&lt; Content-Type: text/plain
-&lt; Server: Jetty(8.1.14.v20131031)
-Invalid Date Params: y=2001,m=01,d=abc
-What were you thinking?* Closing connection #0
-</pre></div></div>
-        <hr />
-    </div>
-		
-
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="http://www.nextinstruction.com/custom-jersey-security-filter.html"><h2>Custom Security Filters in Jersey</h2></a>
-        <div class= "well small"> Sun 23 March 2014
-
-by <a class="url fn" href="http://www.nextinstruction.com/author/omnisis.html">omnisis</a>
- 
+<article>
+	<h3><a href="http://www.nextinstruction.com/custom-jersey-exception-mapping.html">Custom Exception Mapping in Jersey</a></h3>
+	<h6>Written by <a href="http://www.nextinstruction.com/author/omnisis.html">omnisis</a> in <a href="http://www.nextinstruction.com/category/programming.html">programming</a> on Mon 24 March 2014.</h6>
+	<p>Custom Exception Mapping in Jersey</p>
+		<p class="continue"><a href="http://www.nextinstruction.com/custom-jersey-exception-mapping.html">Continue reading &raquo;</a></p>
+</article>
+<hr />
+<article>
+	<h3><a href="http://www.nextinstruction.com/custom-jersey-security-filter.html">Custom Security Filters in Jersey</a></h3>
+	<h6>Written by <a href="http://www.nextinstruction.com/author/omnisis.html">omnisis</a> in <a href="http://www.nextinstruction.com/category/programming.html">programming</a> on Sun 23 March 2014.</h6>
+	<p>Create a custom jersey security filter</p>
+		<p class="continue"><a href="http://www.nextinstruction.com/custom-jersey-security-filter.html">Continue reading &raquo;</a></p>
+</article>
+<hr />
+<article>
+	<h3><a href="http://www.nextinstruction.com/rest-with-jersey2-spring3-and-jackson.html">Jersey2 + Spring3 + Jackson</a></h3>
+	<h6>Written by <a href="http://www.nextinstruction.com/author/omnisis.html">omnisis</a> in <a href="http://www.nextinstruction.com/category/programming.html">programming</a> on Sat 22 March 2014.</h6>
+	<p>Setting up Spring3 + Jersey + JSON</p>
+		<p class="continue"><a href="http://www.nextinstruction.com/rest-with-jersey2-spring3-and-jackson.html">Continue reading &raquo;</a></p>
+</article>
+<hr />
 
 
- </div>
-        <div class="summary"><p>Create a custom jersey security filter</p> <a class="btn btn-info xsmall" href="http://www.nextinstruction.com/custom-jersey-security-filter.html">read more</a></div>
-    </div>	
-				
+						</div>
+						<!-- End Main Content -->
+						<!-- Sidebar -->
+						<aside class="medium-3 hide-for-small-only columns">
+							<div class="panel">
+								<h5>Places</h5>
+								<ul class="side-nav">
+									<li><a href="http://getpelican.com/">Pelican</a></li>
+									<li><a href="http://python.org/">Python.org</a></li>
+									<li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+								</ul>
+							</div>
 
- 
-        
-
- 
-
-    <div class='article'>
-        <a href="http://www.nextinstruction.com/rest-with-jersey2-spring3-and-jackson.html"><h2>Jersey2 + Spring3 + Jackson</h2></a>
-        <div class= "well small"> Sat 22 March 2014
-
-by <a class="url fn" href="http://www.nextinstruction.com/author/omnisis.html">omnisis</a>
- 
-
-
- </div>
-        <div class="summary"><p>Setting up Spring3 + Jersey + JSON</p> <a class="btn btn-info xsmall" href="http://www.nextinstruction.com/rest-with-jersey2-spring3-and-jackson.html">read more</a></div>
-    </div>	
-				
-<div class="pagination">
-<ul>
-    <li class="prev disabled"><a href="#">&larr; Previous</a></li>
-
-    <li class="active"><a href="http://www.nextinstruction.com/category/programming.html">1</a></li>
-
-    <li class="next disabled"><a href="#">&rarr; Next</a></li>
-
-</ul>
-</div>
- 
-  
-        </div>
-
-        <div class="span3">
-
-            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
-            <ul class="nav nav-list">
-                <li class="nav-header">
-                Site
-                </li>
-
-                <li><a href="http://www.nextinstruction.com/">Archives</a>
-                <li><a href="http://www.nextinstruction.com/tags.html">Tags</a>
-                <li><a href="http://www.nextinstruction.com/" rel="alternate">Atom feed</a></li>
-            </ul>
-            </div>
+							<div class="panel">
+								<h5>Tags</h5>
+								<ul class="tag-cloud">
+								</ul>
+							</div>
 
 
-            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
-            <ul class="nav nav-list">
-                <li class="nav-header">
-                Categories
-                </li>
+							<div class="panel">
+								<h5>Links</h5>
+								<ul class="side-nav">
+									<li><a href="http://twitter.com/nullpoint3r">Twitter</a></li>
+								</ul>
+							</div>
+						</aside>
+						<!-- End Sidebar -->
+					</div>
 
-                <li><a href="http://www.nextinstruction.com/category/programming.html">programming</a></li>
-            </ul>
-            </div>
+					<!-- Footer -->
+					<footer class="row">
+						<div class="medium-9 small-12">
+							<hr/>
+							<p class="text-center">Powered by <a href="http://getpelican.com">Pelican</a> and <a href="http://foundation.zurb.com/">Zurb Foundation</a>. Theme by <a href="http://hamaluik.com">Kenton Hamaluik</a>.</p>
+						</div>
+					</footer>
+					<!-- End Footer -->
+				</section>
+				<a class="exit-off-canvas"></a>
+			</div><!--off-canvas inner-->
+		</div><!--off-canvas wrap-->
 
-
-            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
-            <ul class="nav nav-list">
-                <li class="nav-header">
-                Links
-                </li>
-
-                <li><a href="http://getpelican.com/">Pelican</a></li>
-                <li><a href="http://python.org/">Python.org</a></li>
-                <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
-            </ul>
-            </div>
-
-
-            <div class="social">
-            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
-            <ul class="nav nav-list">
-                <li class="nav-header">
-                Social
-                </li>
-
-                <li><a href="http://twitter.com/nullpoint3r">Twitter</a></li>
-            </ul>
-            </div>
-            </div>
-
-        </div>     </div>     </div> 
-<footer>
-<br />
-<p><a href="http://www.nextinstruction.com">NextInstruction</a> &copy; omnisis 2014</p>
-</footer>
-
-</div> <!-- /container -->
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-<script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-collapse.js"></script>
-</body>
+		<script src="http://www.nextinstruction.com/theme/js/jquery.js"></script>
+		<script src="http://www.nextinstruction.com/theme/js/foundation.min.js"></script>
+		<script>
+			$(document).foundation();
+		</script>
+	</body>
 </html>

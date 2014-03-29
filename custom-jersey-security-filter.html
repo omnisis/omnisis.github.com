@@ -1,65 +1,96 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>NextInstruction</title>
-    <meta name="description" content="">
-    <meta name="author" content="omnisis">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!doctype html>
+<html class="no-js" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
-    <!--[if lt IE 9]>
-    <script src="http://www.nextinstruction.com/theme/html5.js"></script>
-    <![endif]-->
+		<title>NextInstruction</title>
+		<meta name="description" content="">
+		<meta name="author" content="omnisis">
 
-    <!-- Le styles -->
-    <link href="http://www.nextinstruction.com/theme/bootstrap.min.css" rel="stylesheet">
-    <link href="http://www.nextinstruction.com/theme/bootstrap.min.responsive.css" rel="stylesheet">
-    <link href="http://www.nextinstruction.com/theme/local.css" rel="stylesheet">
-    <link href="http://www.nextinstruction.com/theme/pygments.css" rel="stylesheet">
-
-</head>
-
-<body>
-
-<div class="navbar">
-    <div class="navbar-inner">
-    <div class="container">
-
-         <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-             <span class="icon-bar"></span>
-             <span class="icon-bar"></span>
-             <span class="icon-bar"></span>
-         </a>
-
-         <a class="brand" href="http://www.nextinstruction.com">NextInstruction</a>
-<h1><small>Permanent storage for my aging wetware</small></h1>        <div class="nav-collapse">
-        <ul class="nav">
-
-        </ul>
-        </div>
-
-    </div>
-    </div>
-</div>
-
-<div class="container">
-    <div class="content">
-    <div class="row">
-
-        <div class="span9">
-    <div class='article'>
-        <div class="content-title">
-            <h1>Custom Security Filters in Jersey</h1>
-Sun 23 March 2014
-
-by <a class="url fn" href="http://www.nextinstruction.com/author/omnisis.html">omnisis</a>
- 
+		<link rel="stylesheet" href="http://www.nextinstruction.com/theme/css/foundation.css" />
+		<link rel="stylesheet" href="http://www.nextinstruction.com/theme/css/pygment/monokai.css" />
+		<link rel="stylesheet" href="http://www.nextinstruction.com/theme/css/custom.css" />
 
 
-        </div>
-	
-        <div><h1>Why use custom security filters?</h1>
+		<script src="http://www.nextinstruction.com/theme/js/modernizr.js"></script>
+
+		<!-- Feeds -->
+		<link href="http://www.nextinstruction.com/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="NextInstruction Atom Feed" />
+
+
+		<!-- mathjax config similar to math.stackexchange -->
+		<script type="text/x-mathjax-config">
+		MathJax.Hub.Config({
+			jax: ["input/TeX", "output/HTML-CSS"],
+			tex2jax: {
+				inlineMath: [ ['$', '$'] ],
+				displayMath: [ ['$$', '$$']],
+				processEscapes: true,
+				skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+			},
+			messageStyle: "none",
+			"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+		});
+		</script>
+		<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+	</head>
+	<body>
+		<div class="off-canvas-wrap">
+			<div class="inner-wrap">
+				<!-- mobile top bar to activate nav -->
+				<nav class="tab-bar show-for-small">
+					<section class="left-small">
+						<a class="left-off-canvas-toggle menu-icon" ><span></span></a>
+					</section>
+
+					<section class="middle tab-bar-section">
+						<h1 class="title">NextInstruction</h1>
+					</section>
+				</nav>
+
+				<!-- mobile side bar nav -->
+				<aside class="left-off-canvas-menu">
+					<ul class="off-canvas-list">
+						<li><a href="http://www.nextinstruction.com">Home</a></li>
+						<li><label>Categories</label></li>
+							<li class="active"><a href="http://www.nextinstruction.com/category/programming.html">programming</a></li>
+
+						<li><label>Places</label></li>
+							<li><a href="http://getpelican.com/">Pelican</a></li>
+							<li><a href="http://python.org/">Python.org</a></li>
+							<li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+
+
+
+						<li><label>Links</label></li>
+							<li><a href="http://twitter.com/nullpoint3r">Twitter</a></li>
+					</ul>	
+				</aside>
+
+				<!-- top bar nav -->
+				<nav class="top-bar hide-for-small-only" data-topbar>
+					<ul class="title-area">
+						<li class="name">
+							<h1><a href="http://www.nextinstruction.com/">NextInstruction</a></h1>
+						</li>
+					</ul>
+
+					<section class="top-bar-section">
+						<ul class="left">
+								<li class="active"><a href="http://www.nextinstruction.com/category/programming.html">programming</a></li>
+						</ul>
+					</section>
+				</nav>
+
+				<!-- Main Page Content and Sidebar -->
+				<section class="main-section">
+					<div class="row">
+						<!-- Main Content -->
+						<div class="medium-9 small-12 columns" role="content">
+<article>
+	<h2>Custom Security Filters in Jersey</h2>
+	<h1>Why use custom security filters?</h1>
 <p>Most apps that provide RESTful web services these days use standards like OAuth
 for web application security however many enterprise and legacy systems still
 interface with large directory services or proprietary user repositories.  If
@@ -351,85 +382,75 @@ back to the Principal defined in our SecurityContext.</p>
 <span class="kd">public</span> <span class="n">UserInfo</span> <span class="nf">showInfo</span><span class="o">(</span><span class="nd">@AppUser</span> <span class="n">UserInfo</span> <span class="n">userInfo</span><span class="o">)</span> <span class="o">{</span>
     <span class="k">return</span> <span class="n">userInfo</span><span class="o">;</span>
 <span class="o">}</span>
-</pre></div></div>
-	
-        <hr>
+</pre></div>
+	<hr/>
+	<h6>Written by <a href="http://www.nextinstruction.com/author/omnisis.html">omnisis</a> in <a href="http://www.nextinstruction.com/category/programming.html">programming</a> on Sun 23 March 2014.</h6>
+</article>
 
-        <h2>Comments</h2>
-<div id="disqus_thread"></div>
-<script type="text/javascript">
-    var disqus_shortname = 'omnisisblog'; 
-    var disqus_title = 'Custom Security Filters in Jersey';
+<hr/>
+<div class="row">
+	<div class="small-12 columns">
+		<h3>Comments</h3>
+		<div id="disqus_thread"></div>
+		<script type="text/javascript">
+			var disqus_shortname = 'omnisisblog';
+			(function() {
+				var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+				dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+				(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+		<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+	</div>
+</div>
+						</div>
+						<!-- End Main Content -->
+						<!-- Sidebar -->
+						<aside class="medium-3 hide-for-small-only columns">
+							<div class="panel">
+								<h5>Places</h5>
+								<ul class="side-nav">
+									<li><a href="http://getpelican.com/">Pelican</a></li>
+									<li><a href="http://python.org/">Python.org</a></li>
+									<li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+								</ul>
+							</div>
 
-    (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    })();
-</script>
-<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-    </div>
-        </div>
-
-        <div class="span3">
-
-            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
-            <ul class="nav nav-list">
-                <li class="nav-header">
-                Site
-                </li>
-
-                <li><a href="http://www.nextinstruction.com/">Archives</a>
-                <li><a href="http://www.nextinstruction.com/tags.html">Tags</a>
-                <li><a href="http://www.nextinstruction.com/" rel="alternate">Atom feed</a></li>
-            </ul>
-            </div>
-
-
-            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
-            <ul class="nav nav-list">
-                <li class="nav-header">
-                Categories
-                </li>
-
-                <li><a href="http://www.nextinstruction.com/category/programming.html">programming</a></li>
-            </ul>
-            </div>
+							<div class="panel">
+								<h5>Tags</h5>
+								<ul class="tag-cloud">
+								</ul>
+							</div>
 
 
-            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
-            <ul class="nav nav-list">
-                <li class="nav-header">
-                Links
-                </li>
+							<div class="panel">
+								<h5>Links</h5>
+								<ul class="side-nav">
+									<li><a href="http://twitter.com/nullpoint3r">Twitter</a></li>
+								</ul>
+							</div>
+						</aside>
+						<!-- End Sidebar -->
+					</div>
 
-                <li><a href="http://getpelican.com/">Pelican</a></li>
-                <li><a href="http://python.org/">Python.org</a></li>
-                <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
-            </ul>
-            </div>
+					<!-- Footer -->
+					<footer class="row">
+						<div class="medium-9 small-12">
+							<hr/>
+							<p class="text-center">Powered by <a href="http://getpelican.com">Pelican</a> and <a href="http://foundation.zurb.com/">Zurb Foundation</a>. Theme by <a href="http://hamaluik.com">Kenton Hamaluik</a>.</p>
+						</div>
+					</footer>
+					<!-- End Footer -->
+				</section>
+				<a class="exit-off-canvas"></a>
+			</div><!--off-canvas inner-->
+		</div><!--off-canvas wrap-->
 
-
-            <div class="social">
-            <div class="well" style="padding: 8px 0; background-color: #FBFBFB;">
-            <ul class="nav nav-list">
-                <li class="nav-header">
-                Social
-                </li>
-
-                <li><a href="http://twitter.com/nullpoint3r">Twitter</a></li>
-            </ul>
-            </div>
-            </div>
-
-        </div>     </div>     </div> 
-<footer>
-<br />
-<p><a href="http://www.nextinstruction.com">NextInstruction</a> &copy; omnisis 2014</p>
-</footer>
-
-</div> <!-- /container -->
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-<script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-collapse.js"></script>
-</body>
+		<script src="http://www.nextinstruction.com/theme/js/jquery.js"></script>
+		<script src="http://www.nextinstruction.com/theme/js/foundation.min.js"></script>
+		<script>
+			$(document).foundation();
+		</script>
+	</body>
 </html>
