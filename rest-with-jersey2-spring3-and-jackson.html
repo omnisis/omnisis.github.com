@@ -1,42 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-        <meta charset="utf-8" />
-        <title>Jersey2 + Spring3 + Jackson</title>
-        <link rel="stylesheet" href="./theme/css/main.css" />
 
-        <!--[if IE]>
-            <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-        <![endif]-->
+        <title>Jersey2 + Spring3 + Jackson</title>
+        <meta charset="utf-8" />
+        <link href="http://www.nextinstruction.com/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="NextInstruction.com Full Atom Feed" />
+        <link href="http://www.nextinstruction.com/feeds/programming.atom.xml" type="application/atom+xml" rel="alternate" title="NextInstruction.com Categories Atom Feed" />
+
+
+        <!-- Mobile viewport optimized: j.mp/bplateviewport -->
+        <meta name="viewport" content="width=device-width,initial-scale=1, maximum-scale=1">
+
+        <link rel="stylesheet" type="text/css" href="http://www.nextinstruction.com/theme/gumby.css" />
+        <link rel="stylesheet" type="text/css" href="http://www.nextinstruction.com/theme/style.css" />
+        <link rel="stylesheet" type="text/css" href="http://www.nextinstruction.com/theme/pygment.css" />
+
+        <script src="http://www.nextinstruction.com/theme/js/libs/modernizr-2.6.2.min.js"></script>
+
+
+
+
+
+
 </head>
 
 <body id="index" class="home">
-        <header id="banner" class="body">
-                <h1><a href="./">Next Instruction: Technology Musings </a></h1>
-                <nav><ul>
-                    <li class="active"><a href="./category/programming.html">programming</a></li>
-                </ul></nav>
-        </header><!-- /#banner -->
+
+
+    <div class="container">
+
+        <div class="row">
+
+          <header id="banner" class="body">
+                  <h1><a href="http://www.nextinstruction.com">NextInstruction.com <strong></strong></a></h1>
+          </header><!-- /#banner -->
+
+            <div id="navigation" class="navbar row">
+              <a href="#" gumby-trigger="#navigation &gt; ul" class="toggle"><i class="icon-menu"></i></a>
+             
+              <ul class="columns">
+                <li><a href="http://www.nextinstruction.com">Home</a></li>
+
+                  <li class="active"><a href="http://www.nextinstruction.com/category/programming.html">programming</a></li>
+
+              </ul>
+            </div>
+
 <section id="content" class="body">
-  <article>
-    <header>
-      <h1 class="entry-title">
-        <a href="./rest-with-jersey2-spring3-and-jackson.html" rel="bookmark"
-           title="Permalink to Jersey2 + Spring3 + Jackson">Jersey2 + Spring3 + Jackson</a></h1>
-    </header>
 
-    <div class="entry-content">
-<footer class="post-info">
-        <abbr class="published" title="2014-03-22T21:00:00">
+   <div class="row">
+        <div class="eleven columns">
+
+
+            <header>
+              <h2 class="entry-title">
+                <a href="http://www.nextinstruction.com/rest-with-jersey2-spring3-and-jackson.html" rel="bookmark"
+                   title="Permalink to Jersey2 + Spring3 + Jackson">Jersey2 + Spring3 + Jackson</a></h2>
+           
+            </header>
+            <footer class="post-info">
+              <abbr class="published" title="2014-03-22T21:00:00">
                 Sat 22 March 2014
-        </abbr>
-
-        <address class="vcard author">
-                By <a class="url fn" href="./author/omnisis.html">omnisis</a>
-        </address>
-<p>In <a href="./category/programming.html">programming</a>. </p>
-
-</footer><!-- /.post-info -->      <h1>The stack</h1>
+              </abbr>
+              <address class="vcard author">
+                By <a class="url fn" href="http://www.nextinstruction.com/author/omnisis.html">omnisis</a>
+              </address>
+            </footer><!-- /.post-info -->
+            <div class="entry-content">
+              <h1>The stack</h1>
 <p>In this blog post I will show how to integrate Spring3, Jersey2.0 and Jackson
 (for seamless JSON support).  Here are the technologies used:</p>
 <ul>
@@ -409,52 +440,83 @@ tricky part is the relative path in the ResourceBase.  If you run this and hit
 <div class="highlight"><pre>If the facts don&#39;t fit the theory, change the facts.
 -- Albert Einstein
 </pre></div>
-    </div><!-- /.entry-content -->
-    <div class="comments">
-      <h2>Comments !</h2>
-      <div id="disqus_thread"></div>
-      <script type="text/javascript">
-        var disqus_identifier = "rest-with-jersey2-spring3-and-jackson.html";
-        var disqus_url = "./rest-with-jersey2-spring3-and-jackson.html";
-        (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = 'http://nextinstruction-blog.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-        })();
-      </script>
+            </div><!-- /.entry-content -->
+            <div class="comments">
+              <h3>Comments</h3>
+              <div id="disqus_thread"></div>
+              <script type="text/javascript">
+                var disqus_identifier = "rest-with-jersey2-spring3-and-jackson.html";
+                (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                dsq.src = 'http://omnisisblog.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                })();
+              </script>
+            </div>
+
+
+        </div><!-- /.eleven.columns -->
+        
+<div class="three columns">
+
+<h4>Pages</h4>
+
+ <ul>
+        <li class="active"><a href="http://www.nextinstruction.com/category/programming.html">programming</a></li>
+  </ul>
+
+<h4>Categories</h4>
+<ul>
+		<li><a href="http://www.nextinstruction.com/category/programming.html">programming</a></li>
+</ul>
+
+
+<h4>Tags</h4>
+
+
+
+</div> </div><!-- /.row -->
+
+
+</section>
+
+       </div><!-- /.row -->
+    </div><!-- /.container -->
+
+
+       <div class="container.nopad bg">
+
+    
+        <footer id="credits" class="row">
+          <div class="seven columns left-center">
+
+                   <address id="about" class="vcard body">
+                    Proudly powered by <a href="http://getpelican.com/">Pelican</a>,
+                    which takes great advantage of <a href="http://python.org">Python</a>.
+                    <br />
+                    Based on the <a target="_blank" href="http://gumbyframework.com">Gumby Framework</a>
+                    </address>
+          </div>
+
+
+          <div class="seven columns">
+            <div class="row">
+              <ul class="socbtns">
+
+
+
+
+
+              </ul>
+            </div>
+          </div>
+        </footer>
+
     </div>
 
-  </article>
-</section>
-        <section id="extras" class="body">
-                <div class="blogroll">
-                        <h2>blogroll</h2>
-                        <ul>
-                            <li><a href="http://getpelican.com/">Pelican</a></li>
-                            <li><a href="http://python.org/">Python.org</a></li>
-                            <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
-                        </ul>
-                </div><!-- /.blogroll -->
-                <div class="social">
-                        <h2>social</h2>
-                        <ul>
-
-                            <li><a href="#">You can add links in your config file</a></li>
-                            <li><a href="#">Another social link</a></li>
-                        </ul>
-                </div><!-- /.social -->
-        </section><!-- /#extras -->
-
-        <footer id="contentinfo" class="body">
-                <address id="about" class="vcard body">
-                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
-                </address><!-- /#about -->
-
-                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
-        </footer><!-- /#contentinfo -->
 
 <script type="text/javascript">
-    var disqus_shortname = 'nextinstruction-blog';
+    var disqus_shortname = 'omnisisblog';
     (function () {
         var s = document.createElement('script'); s.async = true;
         s.type = 'text/javascript';
@@ -462,5 +524,8 @@ tricky part is the relative path in the ResourceBase.  If you run this and hit
         (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
     }());
 </script>
+  <script src="http://www.nextinstruction.com/theme/js/libs/jquery-1.9.1.min.js"></script>
+  <script src="http://www.nextinstruction.com/theme/js/libs/gumby.min.js"></script>
+  <script src="http://www.nextinstruction.com/theme/js/plugins.js"></script>
 </body>
 </html>
